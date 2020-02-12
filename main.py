@@ -40,7 +40,10 @@ def reformat(soup, after, before, link_before='', link_after='', link_delete=Tru
     tmp = ''
     link = ''
     if not link_delete:
-        link = link_before + soup.get('href') + link_after
+        try:
+            link = link_before + soup.get('href') + link_after
+        except:
+            pass
     if not delete:
         tmp = before + soup.get_text() + after + link
     soup.string = tmp
@@ -63,6 +66,8 @@ def get_content(html):
     link = option['a_link']
     items = soup.find(first_tag).parent
     title = ''
+    a = soup.find('a').get('href')
+    print(a)
     if not heading.delete:
         title = soup.find(name).get_text() + heading.after
     for key, value in option.items():

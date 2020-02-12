@@ -14,6 +14,7 @@ option = {
     'h2': Tag('\n\n', '\n\n'),
     'h3': Tag('\n\n', '\n\n'),
     'p': Tag('\n\n'),
+    'script': Tag('', '', True),
     'br/': Tag('\n\n'),
     'a': Tag(''),
     'blockquote': Tag('\n\n')
