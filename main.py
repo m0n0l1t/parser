@@ -1,10 +1,20 @@
+
 import requests
+import sys
 from bs4 import BeautifulSoup
 import textwrap
 import os
 from setting import option
 
 HEADERS = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/69.0', 'accept': '*/*'}
+
+
+def loop():
+    URL = str(sys.argv)
+    if len(URL) < 1:
+        loop()
+    else:
+        parse()
 
 
 def get_html(url):
@@ -16,54 +26,57 @@ def get_html(url):
 def save_file(items, path):
     with open(path, 'w', encoding='utf-8', newline='\n') as file:
         for item in items:
-            item = item.replace('\n', '`~')
-            item = textwrap.fill(item, 80)
-            item = item.replace('`~', '\n')
+            try:
+                item = item.replace('\n', '`~')
+
+                item = textwrap.fill(item, 80)
+                item = item.replace('`~', '\n')
+            except:
+                pass
             file.write(item)
 
 
-def reformat(soup, after, before, delete=False):
+def reformat(soup, after, before, link_before='', link_after='', link_delete=True, delete=False):
     tmp = ''
-    for j in soup:
-        if not delete:
-            tmp = before+j.get_text()+after
-        j.string = tmp
-        j.name = 'content'
+    link = ''
+    if not link_delete:
+        link = link_before + soup.get('href') + link_after
+    if not delete:
+        tmp = before + soup.get_text() + after + link
+    soup.string = tmp
+    soup.name = 'content'
     return soup
 
 
-def reformat_link(soup, after, before, link_before, link_after, link_delete=False, delete=False):
+def reformat_all(soup, after, before, link_before='', link_after='', link_delete=True, delete=False):
     tmp = ''
-    link = ''
     for j in soup:
-        if not link_delete:
-            link = link_before + j.get('href') + link_after
-        if not delete:
-            tmp = before+j.get_text()+after+link
-        j.string = tmp
-        j.name = 'content'
+        reformat(j, after, before, link_before, link_after, link_delete, delete)
     return soup
 
 
 def get_content(html):
     soup = BeautifulSoup(html, 'html.parser')
-    heading = option['h1']
-    items = soup.find('p').parent
+    name = option['article title']
+    heading = option[name]
+    first_tag = option['main']
     link = option['a_link']
+    items = soup.find(first_tag).parent
     title = ''
     if not heading.delete:
-        title = soup.find('h1').get_text()+heading.after
+        title = soup.find(name).get_text() + heading.after
     for key, value in option.items():
-        tag = items.find_all(key)
-        if key == 'a':
-            reformat_link(tag, value.after, value.before, link.before, link.after, link.delete, value.delete)
-        else:
-            reformat(tag, value.after, value.before, value.delete)
+        link.delete = True
+        if key != 'main' and key != 'article title' and key != 'a_link':
+            tag = items.find_all(key)
+            if key == 'a':
+                link.delete = False
+            reformat_all(tag, value.after, value.before, link.before, link.after, link.delete, value.delete)
 
-    main = items.find_all('content')
+
     article = [title]
-    for k in main:
-        article.append(k.get_text())
+    article.append(items.get_text())
+
     return article
 
 
@@ -74,13 +87,15 @@ def parse():
     path = os.path.join(os.getcwd(), URL[8:end])
     if not os.path.exists(path):
         os.makedirs(path)
-    FILE = URL[end:]+'.txt'
+    FILE = URL[end:] + '.txt'
     html = get_html(URL)
     if html.status_code == 200:
         article = get_content(html.text)
-        save_file(article, path+FILE)
-
-        os.startfile(path+FILE)
+        save_file(article, path + FILE)
+        try:
+            os.startfile(path + FILE)
+        except:
+            print('Статья была успешно спарсена')
     else:
         print('Error')
 
