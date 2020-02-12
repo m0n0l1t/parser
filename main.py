@@ -1,4 +1,3 @@
-
 import requests
 import sys
 from bs4 import BeautifulSoup
@@ -59,7 +58,7 @@ def reformat_all(soup, after, before, link_before='', link_after='', link_delete
 
 
 def get_content(html):
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, 'lxml')
     name = option['article title']
     heading = option[name]
     first_tag = option['main']
