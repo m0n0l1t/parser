@@ -8,14 +8,6 @@ from setting import option
 HEADERS = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/69.0', 'accept': '*/*'}
 
 
-def loop():
-    URL = str(sys.argv)
-    if len(URL) < 1:
-        loop()
-    else:
-        parse()
-
-
 def get_html(url):
     session = requests.Session()
     r = session.get(url, headers=HEADERS)
@@ -29,6 +21,7 @@ def save_file(items, path):
                 item = item.replace('\n', '`~')
 
                 item = textwrap.fill(item, 80)
+                item = item.replace('`~`~`~`~', '`~`~')
                 item = item.replace('`~', '\n')
             except:
                 pass
@@ -63,7 +56,7 @@ def get_content(html):
     heading = option[name]
     first_tag = option['main']
     link = option['a_link']
-    items = soup.find(first_tag).parent
+    items = soup.find(first_tag.before,class_=first_tag.clas)
     title = ''
     a = soup.find('a').get('href')
     print(a)
@@ -72,23 +65,26 @@ def get_content(html):
     for key, value in option.items():
         link.delete = True
         if key != 'main' and key != 'article title' and key != 'a_link':
+            if value.clas!='':
+                tag = items.find_all(key,class_=value.clas)
+                reformat(tag, value.after, value.before, link.before, link.after, link.delete, value.delete)
             tag = items.find_all(key)
             if key == 'a':
                 link.delete = False
             reformat_all(tag, value.after, value.before, link.before, link.after, link.delete, value.delete)
 
-
-    article = [title]
-    article.append(items.get_text())
+    article = [title, items.get_text()]
 
     return article
 
 
-def parse():
-    URL = input('Введите URL: ')
+def parse(URL):
+    #URL = input('Введите URL: ')
     URL = URL.strip()
     end = URL.rfind('/')
-    path = os.path.join(os.getcwd(), URL[8:end])
+    tmp = URL.replace('http://','')
+    tmp = URL.replace('https://', '')
+    path = os.path.join(os.getcwd(), tmp)
     if not os.path.exists(path):
         os.makedirs(path)
     FILE = URL[end:] + '.txt'
@@ -104,5 +100,13 @@ def parse():
         print('Error')
 
 
+def loop():
+    URL = str(sys.argv[1])
+    if len(URL) < 1:
+        loop()
+    else:
+        parse(URL)
+
+
 if __name__ == '__main__':
-    parse()
+    loop()
