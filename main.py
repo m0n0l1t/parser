@@ -66,8 +66,11 @@ def get_content(html):
         link.delete = True
         if key != 'main' and key != 'article title' and key != 'a_link':
             if value.clas!='':
-                tag = items.find_all(key,class_=value.clas)
-                reformat(tag, value.after, value.before, link.before, link.after, link.delete, value.delete)
+                try:
+                    tag = items.find_all(key,class_=value.clas)
+                    reformat(tag, value.after, value.before, link.before, link.after, link.delete, value.delete)
+                except:
+                    pass
             tag = items.find_all(key)
             if key == 'a':
                 link.delete = False
@@ -101,12 +104,13 @@ def parse(URL):
 
 
 def loop():
-    URL = str(sys.argv[1])
-    if len(URL) < 1:
-        loop()
-    else:
-        parse(URL)
-
+    try:
+        URL = str(sys.argv[1])
+    except:
+        URL = input('Введите URL или 0 чтобы выйти: ')
+        if URL!='0':
+            parse(URL)
+            loop()
 
 if __name__ == '__main__':
     loop()

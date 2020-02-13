@@ -9,7 +9,7 @@ class Tag:
 
 option = {
     'article title': 'h1',
-    'main': Tag('div','', 'text jsArticleBody js-mediator-article'),
+    'main': Tag('div','', 'content-entry'),
     'a_link': Tag(' [', '] '),
     'h1': Tag('\n\n', '\n\n'),
     'h2': Tag('\n\n', '\n\n'),
